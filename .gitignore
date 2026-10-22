@@ -1,0 +1,10 @@
+# Reference repairs are excluded from solver inputs.
+# They live in the private arvisq-solutions repo and are published
+# together with each case's Medium write-up (~2-3 weeks after release).
+solution/
+
+# local state
+.arvisq-progress
+__pycache__/
+*.pyc
+.env

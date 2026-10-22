@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# A.R.V.I.S.Q. case verifier
+#   ./verify case-001                      -> rebuild app, run security + function suites
+#   ./verify case-001 --evidence 'EVIDENCE{...}' -> also validate a collected evidence token
+set -uo pipefail
+cd "$(dirname "$0")"
+
+CASE="${1:-}"
+if [[ -z "$CASE" ]]; then
+  echo "usage: ./verify <case-id> [--evidence 'EVIDENCE{...}']"
+  exit 2
+fi
+shift
+
+EVIDENCE=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --evidence) EVIDENCE="${2:-}"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+
+# case-id -> host port mapping (one line per case as the season grows)
+PORT=""
+case "$CASE" in
+  case-001) PORT=8001 ;;
+  *) echo "unknown case: $CASE"; exit 2 ;;
+esac
+
+bold=$(tput bold 2>/dev/null || true); reset=$(tput sgr0 2>/dev/null || true)
+echo "${bold}A.R.V.I.S.Q. // verifying ${CASE}${reset}"
+
+echo "— rebuilding app from source (your edits are the fix) ..."
+docker compose build "$CASE" >/dev/null || { echo "build failed"; exit 1; }
+docker compose up -d "$CASE" >/dev/null 2>&1
+docker compose build "${CASE}-tests" >/dev/null || { echo "test-runner build failed"; exit 1; }
+
+echo "— running security suite ..."
+docker compose run --rm "${CASE}-tests" pytest -q -p no:cacheprovider /tests/security
+SEC=$?
+
+echo "— running function suite ..."
+docker compose run --rm "${CASE}-tests" pytest -q -p no:cacheprovider /tests/function
+FUN=$?
+
+EVID_MSG=""
+if [[ -n "$EVIDENCE" ]]; then
+  VALID=$(curl -s -X POST "http://localhost:${PORT}/internal/evidence/validate" \
+    -H 'Content-Type: application/json' \
+    -d "{\"token\": \"${EVIDENCE}\"}" | grep -c '"valid":true')
+  if [[ "$VALID" == "1" ]]; then
+    EVID_MSG="EVIDENCE COLLECTED ✓ — full marks, lore fragment unlocked"
+  else
+    EVID_MSG="evidence token rejected ✗ (tokens are per-run; collect it from the LIVE app)"
+  fi
+fi
+
+echo
+if [[ $SEC -eq 0 && $FUN -eq 0 ]]; then
+  echo "${bold}CASE ${CASE#case-}: CLOSED${reset} — vulnerability contained, business function intact."
+  [[ -n "$EVID_MSG" ]] && echo "$EVID_MSG"
+  exit 0
+elif [[ $SEC -ne 0 && $FUN -eq 0 ]]; then
+  echo "${bold}CASE ${CASE#case-}: OPEN${reset} — the vulnerability is still present."
+elif [[ $SEC -eq 0 && $FUN -ne 0 ]]; then
+  echo "${bold}CASE ${CASE#case-}: REGRESSION${reset} — you contained the flaw but broke legitimate behavior. Fix the flaw, don't amputate the feature."
+else
+  echo "${bold}CASE ${CASE#case-}: BROKEN${reset} — both suites failing; the app may not be starting. Check: docker compose logs ${CASE}"
+fi
+[[ -n "$EVID_MSG" ]] && echo "$EVID_MSG"
+exit 1

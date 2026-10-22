@@ -1,0 +1,31 @@
+# A.R.V.I.S.Q. challenge manifest — single format for every case
+id: "NNN"
+slug: short-kebab-slug
+title: "The <Title>"
+season: 1
+story_hook: "One-line incident summary"
+
+categories: []            # e.g. [agentic-ai, authorization] | [llm, rag] | [backend, cve]
+difficulty: beginner      # beginner | intermediate | advanced
+prerequisites: []         # case slugs recommended before this one
+estimated_time: "60-90 min"
+
+skills:                   # what the solver practices / learns
+  - skill-one
+  - skill-two
+
+lesson: "The one-sentence main lesson of this case"
+
+mappings:                 # use names, not numbers — lists get renumbered across editions
+  owasp_llm_top10: []     # e.g. ["Prompt Injection", "Excessive Agency"]
+  owasp_api_top10: []     # e.g. ["Broken Object Level Authorization"]
+  mitre_atlas: []
+  cve: []                 # only for CVE-reproduction cases, exact IDs
+
+services:
+  - name: case-NNN
+    port: 80NN
+
+verify:
+  security_tests: tests/security
+  function_tests: tests/function

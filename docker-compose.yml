@@ -1,0 +1,37 @@
+services:
+  # ── Case 001 — The Borrowed Identity ──────────────────────────────
+  case-001:
+    build: ./seasons/season-01/cases/001-borrowed-identity/app
+    ports:
+      - "8001:8000"
+    environment:
+      - FIXTURES_DIR=/fixtures
+      - OLLAMA_URL=${OLLAMA_URL:-}
+    volumes:
+      - ./seasons/season-01/cases/001-borrowed-identity/fixtures:/fixtures:ro
+      - case-001-state:/state
+
+  case-001-tests:
+    profiles: ["test"]
+    build: ./tools/test-runner
+    environment:
+      - BASE_URL=http://case-001:8000
+    volumes:
+      - ./seasons/season-01/cases/001-borrowed-identity/tests:/tests:ro
+    depends_on:
+      - case-001
+
+  # ── Optional local LLM for the assistant's conversational layer ───
+  # Start with: docker compose --profile llm up ollama
+  # Then: export OLLAMA_URL=http://ollama:11434 before starting cases.
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["llm"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+
+volumes:
+  ollama-models:
+  case-001-state:

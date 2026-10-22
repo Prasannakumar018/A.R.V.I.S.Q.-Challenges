@@ -1,0 +1,42 @@
+[
+  {
+    "id": "INV-1001",
+    "tenant_id": "acme",
+    "description": "Starter plan - Q4 subscription",
+    "amount": 1240.0,
+    "currency": "EUR",
+    "status": "paid",
+    "billing_address": "14 Foundry Lane, Munich",
+    "notes": "Renewal confirmed by procurement."
+  },
+  {
+    "id": "INV-1002",
+    "tenant_id": "acme",
+    "description": "Starter plan - usage overage, October",
+    "amount": 86.5,
+    "currency": "EUR",
+    "status": "open",
+    "billing_address": "14 Foundry Lane, Munich",
+    "notes": "Overage from assistant API calls."
+  },
+  {
+    "id": "INV-2001",
+    "tenant_id": "globex",
+    "description": "Enterprise plan - hull-sensor analytics pilot",
+    "amount": 98750.0,
+    "currency": "EUR",
+    "status": "open",
+    "billing_address": "7 Harbor Mews, Rotterdam",
+    "notes": "Payment covers the confidential analytics pilot."
+  },
+  {
+    "id": "INV-2002",
+    "tenant_id": "globex",
+    "description": "Enterprise plan - annual subscription",
+    "amount": 54000.0,
+    "currency": "EUR",
+    "status": "paid",
+    "billing_address": "7 Harbor Mews, Rotterdam",
+    "notes": "Standard annual renewal."
+  }
+]

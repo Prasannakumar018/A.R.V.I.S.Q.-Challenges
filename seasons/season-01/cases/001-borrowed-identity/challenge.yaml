@@ -1,0 +1,31 @@
+id: "001"
+slug: borrowed-identity
+title: "The Borrowed Identity"
+season: 1
+story_hook: "An assistant reveals another tenant's invoice"
+
+categories: [agentic-ai, authorization]
+difficulty: beginner
+prerequisites: []
+estimated_time: "60-90 min"
+
+skills:
+  - object-level-authorization-at-tool-boundaries
+  - tenant-isolation-in-agent-tools
+  - threat-modeling-llm-tool-calls
+
+lesson: "Enforce identity and ownership at the tool/API boundary — never trust the model to scope data access"
+
+mappings:
+  owasp_llm_top10: ["Excessive Agency"]
+  owasp_api_top10: ["Broken Object Level Authorization"]
+  mitre_atlas: []
+  cve: []
+
+services:
+  - name: case-001
+    port: 8001
+
+verify:
+  security_tests: tests/security
+  function_tests: tests/function
