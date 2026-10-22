@@ -6,6 +6,6 @@ quests: investigate incidents in AI-powered systems, exploit the flaw, collect
 the evidence, and ship the verified fix — ideally with your own AI coding agent
 at your side.
 
-- 🕵️ **Start here:** [Season 1 — Origin story & quickstart](seasons/season-01/Origin_story.md)
-- 📖 **How to play, case roster & rewards:** [Player guide](seasons/season-01/cases/Player_Guide.md)
+- 🕵️ **Start here:** [Season 1 — Origin story & quickstart](seasons/season-01/README.md)
+- 📖 **How to play, case roster & rewards:** [Player guide](seasons/season-01/cases/README.md)
 - 🏆 **Finished cases?** [Hall of Fame](HALL_OF_FAME.md)
