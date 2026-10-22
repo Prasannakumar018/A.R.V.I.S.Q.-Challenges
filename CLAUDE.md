@@ -15,13 +15,15 @@ Each case lives in `seasons/season-NN/cases/NNN-slug/`:
 - `tests/security/` — red until the flaw is correctly contained
 - `tests/function/` — green now, must stay green (no amputating features)
 
-The loop: `docker compose up --build case-NNN` → investigate → prove → repair
-`app/` → `./verify case-NNN`. Both suites green = case CLOSED.
+The loop: `docker compose up --build case-NNN` → investigate → prove (collect
+evidence) → repair `app/` → `./verify case-NNN --evidence 'EVIDENCE{...}'`.
+Valid evidence + both suites green = case CLOSED.
 
-**Evidence:** each running case generates a runtime-only evidence token
-(`EVIDENCE{...}`). Collecting it requires actually performing the exploit
-against the live app. `./verify case-NNN --evidence 'EVIDENCE{...}'` grants
-full marks. Encourage the investigator to collect evidence before containing.
+**Evidence is mandatory:** each running case generates a runtime evidence token
+(`EVIDENCE{...}`), reachable only by performing the exploit against the live
+app. A case does not close without it. Warn the investigator early and often:
+collect evidence BEFORE repairing — patching first destroys the crime scene,
+and they would have to restore the vulnerable app and exploit it again.
 
 ## Your rules of engagement
 

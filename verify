@@ -22,12 +22,15 @@ done
 
 # case-id -> host port mapping (one line per case as the season grows)
 PORT=""
+CASE_DIR=""
 case "$CASE" in
-  case-001) PORT=8001 ;;
+  case-001) PORT=8001; CASE_DIR="seasons/season-01/cases/001-borrowed-identity/app" ;;
   *) echo "unknown case: $CASE"; exit 2 ;;
 esac
 
 bold=$(tput bold 2>/dev/null || true); reset=$(tput sgr0 2>/dev/null || true)
+green=$(tput setaf 2 2>/dev/null || true); red=$(tput setaf 1 2>/dev/null || true)
+yellow=$(tput setaf 3 2>/dev/null || true)
 echo "${bold}A.R.V.I.S.Q. // verifying ${CASE}${reset}"
 
 echo "— rebuilding app from source (your edits are the fix) ..."
@@ -43,29 +46,35 @@ echo "— running function suite ..."
 docker compose run --rm "${CASE}-tests" pytest -q -p no:cacheprovider /tests/function
 FUN=$?
 
-EVID_MSG=""
+EVID_OK=0
+EVID_MSG="${red}no evidence submitted ✗${reset} — exploit the live app, collect the token, rerun with --evidence 'EVIDENCE{...}'"
 if [[ -n "$EVIDENCE" ]]; then
   VALID=$(curl -s -X POST "http://localhost:${PORT}/internal/evidence/validate" \
     -H 'Content-Type: application/json' \
     -d "{\"token\": \"${EVIDENCE}\"}" | grep -c '"valid":true')
   if [[ "$VALID" == "1" ]]; then
-    EVID_MSG="EVIDENCE COLLECTED ✓ — full marks, lore fragment unlocked"
+    EVID_OK=1
+    EVID_MSG="${green}${bold}EVIDENCE COLLECTED ✓${reset}${green} — exploitation proven, lore fragment unlocked${reset}"
   else
-    EVID_MSG="evidence token rejected ✗ (tokens are per-run; collect it from the LIVE app)"
+    EVID_MSG="${red}evidence token rejected ✗${reset} (tokens are per-run; collect it from the LIVE app)"
   fi
 fi
 
 echo
-if [[ $SEC -eq 0 && $FUN -eq 0 ]]; then
-  echo "${bold}CASE ${CASE#case-}: CLOSED${reset} — vulnerability contained, business function intact."
-  [[ -n "$EVID_MSG" ]] && echo "$EVID_MSG"
+if [[ $SEC -eq 0 && $FUN -eq 0 && $EVID_OK -eq 1 ]]; then
+  echo "${green}${bold}CASE ${CASE#case-}: CLOSED${reset}${green} — exploitation proven, vulnerability contained, business function intact.${reset}"
+  echo "$EVID_MSG"
   exit 0
+elif [[ $SEC -eq 0 && $FUN -eq 0 ]]; then
+  echo "${yellow}${bold}CASE ${CASE#case-}: CONTAINED — NOT CLOSED${reset}${yellow} — repair verified, but the case file lacks evidence of exploitation.${reset}"
+  echo "$EVID_MSG"
+  echo "Patched before collecting evidence? Restore the app (git checkout -- ${CASE_DIR}), exploit it, grab the token, then re-apply your fix."
 elif [[ $SEC -ne 0 && $FUN -eq 0 ]]; then
-  echo "${bold}CASE ${CASE#case-}: OPEN${reset} — the vulnerability is still present."
+  echo "${red}${bold}CASE ${CASE#case-}: OPEN${reset}${red} — the vulnerability is still present.${reset}"
+  [[ -n "$EVIDENCE" ]] && echo "$EVID_MSG"
 elif [[ $SEC -eq 0 && $FUN -ne 0 ]]; then
-  echo "${bold}CASE ${CASE#case-}: REGRESSION${reset} — you contained the flaw but broke legitimate behavior. Fix the flaw, don't amputate the feature."
+  echo "${yellow}${bold}CASE ${CASE#case-}: REGRESSION${reset}${yellow} — you contained the flaw but broke legitimate behavior. Fix the flaw, don't amputate the feature.${reset}"
 else
-  echo "${bold}CASE ${CASE#case-}: BROKEN${reset} — both suites failing; the app may not be starting. Check: docker compose logs ${CASE}"
+  echo "${red}${bold}CASE ${CASE#case-}: BROKEN${reset}${red} — both suites failing; the app may not be starting. Check: docker compose logs ${CASE}${reset}"
 fi
-[[ -n "$EVID_MSG" ]] && echo "$EVID_MSG"
 exit 1

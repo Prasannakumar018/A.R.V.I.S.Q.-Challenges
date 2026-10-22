@@ -18,7 +18,7 @@ and contain it — without breaking the assistant for legitimate customers.
 ## Objectives
 
 1. **INVESTIGATE** — understand how the assistant resolves "my invoice" into data; reproduce the cross-tenant disclosure
-2. **PROVE** — demonstrate the vulnerability
+2. **PROVE** — demonstrate the vulnerability and **collect the runtime `EVIDENCE{...}` token** it exposes. This is required: a case without evidence does not close — and if you patch first, you destroy the crime scene.
 3. **CONTAIN** — repair `app/` so that:
    - every test in `tests/security/` passes, and
    - every test in `tests/function/` still passes (customers can still query their own invoices)
@@ -27,7 +27,7 @@ and contain it — without breaking the assistant for legitimate customers.
 
 ```bash
 docker compose up --build case-001   # app is built from app/ — your source edits ARE the fix
-./verify case-001                    # rebuilds, runs tests/security + tests/function; case closes when all green
+./verify case-001 --evidence 'EVIDENCE{...}'   # closes only with valid evidence + both suites green
 ```
 
 - **Customer portal (chat UI):** http://localhost:8001 — authenticate with your tenant's API key (see `fixtures/`)

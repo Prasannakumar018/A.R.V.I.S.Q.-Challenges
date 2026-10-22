@@ -10,7 +10,7 @@ Describe the INCIDENT, never the root cause.>
 ## Objectives
 
 1. **INVESTIGATE** — understand what the system does; reproduce the reported incident
-2. **PROVE** — demonstrate the underlying vulnerability
+2. **PROVE** — demonstrate the vulnerability and **collect the runtime `EVIDENCE{...}` token** it exposes. This is required: a case without evidence does not close — and if you patch first, you destroy the crime scene.
 3. **CONTAIN** — repair `app/` so that:
    - every test in `tests/security/` passes, and
    - every test in `tests/function/` still passes (legitimate behavior must not break)
@@ -19,7 +19,7 @@ Describe the INCIDENT, never the root cause.>
 
 ```bash
 docker compose up --build case-NNN   # app is built from app/ — your source edits ARE the fix
-./verify case-NNN                    # rebuilds, runs tests/security + tests/function; case closes when all green
+./verify case-NNN --evidence 'EVIDENCE{...}'   # closes only with valid evidence + both suites green
 ```
 
 ## Field notes

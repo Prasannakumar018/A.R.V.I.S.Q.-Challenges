@@ -12,7 +12,7 @@
 
 | | Old (detective-ai-ctf) | New (A.R.V.I.S.Q.) |
 |---|---|---|
-| Win condition | find hidden flag (sha256) | **make security tests pass while function tests stay green — "the fix is the flag"** |
+| Win condition | find hidden flag (sha256) | **prove the exploit (runtime evidence token) + make security tests pass while function tests stay green — "prove it, then fix it"** |
 | Source code | hidden in prebuilt images | **white-box in `app/` — reading & repairing it IS the game** |
 | Anti-spoiler surface | whole challenge | only `solution/` |
 | Player skill tested | offense only | offense (prove it) + defense (contain it) |
@@ -26,9 +26,9 @@ git clone <repo> && cd A.R.V.I.S.Q.-Challenges
 docker compose up case-001          # vulnerable app + (for agentic cases) local Ollama
 claude                              # CLAUDE.md = in-character A.R.V.I.S.Q. handler briefs you
 # 1. INVESTIGATE  — read the briefing, explore the running app and fixtures
-# 2. PROVE        — reproduce the incident / demonstrate the exploit
-# 3. CONTAIN      — repair app/ 
-./verify case-001                   # security tests pass + legitimate-function tests still pass → case closed
+# 2. PROVE        — perform the exploit and collect the runtime EVIDENCE{...} token (required!)
+# 3. CONTAIN      — repair app/
+./verify case-001 --evidence 'EVIDENCE{...}'   # valid evidence + both suites green → CASE CLOSED
 ```
 
 ## Standard case format (single format, every case)
@@ -68,16 +68,18 @@ The case container is **built from `app/` source** (compose `build:` context), s
 2. **Investigate & prove** — reproduce the incident against the running app; read `app/` to find the root cause
 3. **Repair** — edit the source in `app/`
 4. `./verify case-NNN` — rebuilds the image from the edited source, runs `tests/security/` (now should pass) + `tests/function/` (must still pass) in a test container
-5. Both suites green → case CLOSED → next story chapter unlocks
+5. Both suites green **+ valid evidence token** → case CLOSED → next story chapter unlocks
 
-### Two-tier completion (handles "fix-first" players)
+### Evidence-gated closure (prove it before you patch it)
 
-Nothing stops a player from reading `tests/security/` and patching the code without ever exploiting — that's acceptable (they still had to understand the attack to write a correct fix). The exploit phase is *incentivized*, not enforced:
+Closing a case requires BOTH proof of exploitation AND the repair — a case without evidence does not close:
 
-- **CONTAINED** (required): `./verify` green — closes the case
-- **EVIDENCE COLLECTED** (optional, full marks): the app generates a **random evidence token at container startup** (e.g., planted in the victim tenant's data, or the internal service's response), existing only inside the running container — never in repo/fixtures/source. The only way to obtain it is to actually perform the exploit. Submit: `./verify case-NNN --evidence EVIDENCE{...}`
-- Story reward: cases closed WITH evidence unlock epilogue/lore fragments that connect the incidents to the adversary (feeds Case 008). Fix-first players finish the season; investigators get the full story.
-- `docker exec` token-grabbing is possible — honor system for the public edition; the internal SAP event edition can score both tiers strictly.
+- **EVIDENCE** (required): the app generates a **random evidence token** on first start (persisted on the case's state volume; reset with `docker compose down -v`), planted where only the exploit can reach it — never in repo/fixtures/source. Submit: `./verify case-NNN --evidence 'EVIDENCE{...}'`
+- **CONTAINMENT** (required): security suite green + function suite still green
+- Verdicts: both → **CLOSED** · repair without valid evidence → **CONTAINED — NOT CLOSED** (verify tells the player how to recover: restore the app, exploit, collect, re-apply the fix) · no repair → **OPEN** · broken feature → **REGRESSION**
+- The forensics lesson is deliberate: **patch first and you destroy the crime scene** — the vulnerable app must be restored to collect evidence
+- Story reward: closed cases unlock lore fragments connecting the incidents to the adversary (feeds Case 008)
+- `docker exec` token-grabbing is possible — honor system for the public edition; the internal SAP event edition can score strictly
 
 ## Season 1 — case roster
 
@@ -136,7 +138,7 @@ Case 008 closes the arc: fixtures from earlier cases contain the breadcrumbs tha
 3. ~~Whether "PROVE" phase gets formal credit~~ → **decided:** two-tier completion with runtime evidence tokens (see "Two-tier completion" above)
 
 ## Definition of done
-A stranger can: clone → `docker compose up case-001` → get briefed in-character by their own agent → reproduce the incident → repair the app → `./verify` turns the case CLOSED with all function tests green — on a laptop, offline, no API keys.
+A stranger can: clone → `docker compose up case-001` → get briefed in-character by their own agent → reproduce the incident → collect the evidence token → repair the app → `./verify` turns the case CLOSED with all function tests green — on a laptop, offline, no API keys.
 
 **Resume bullet target:**
 > Created and open-sourced A.R.V.I.S.Q. — a story-driven, self-hosted AI security quest series (Docker, Ollama) where players investigate, exploit, and repair 8 agentic-AI/LLM vulnerability classes using their own AI coding agent, with fixes verified by paired security + functional test suites; ran an internal edition at SAP.
