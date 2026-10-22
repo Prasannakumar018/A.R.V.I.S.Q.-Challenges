@@ -68,4 +68,4 @@ claude   # your agent becomes your A.R.V.I.S.Q. handler
 ```
 
 Full rules of the game, the case roster with difficulties, and what you earn:
-**[cases/README.md](cases/README.md)**.
+**[cases/Player_Guide.md](cases/Player_Guide.md)**.
