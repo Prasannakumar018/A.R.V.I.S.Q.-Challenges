@@ -2,36 +2,70 @@
 
 > **A.R.V.I.S.Q. INCIDENT BRIEFING** · Season 01 · Classification: beginner
 
-## Briefing
+Morning, investigator. LumaWorks has frozen their billing assistant and legal
+is circling. Everything we know so far is in the case file below — work it in
+order.
 
-LumaWorks runs an AI billing assistant that lets customers ask questions about their own
-invoices in plain language. This morning, a customer attached a screenshot to a support
-ticket: the assistant had cheerfully summarized an invoice — line items, amounts, billing
-address — belonging to a **different tenant**.
+## Step 1 — Start here: the incident report
 
-The customer didn't do anything exotic. They just asked.
+Every case begins with what was *reported*, not with what's wrong.
 
-Billing has frozen the feature. Your unit has been handed the running service, its data
-fixtures, and the logs. Find out how the assistant crossed the tenant boundary, prove it,
-and contain it — without breaking the assistant for legitimate customers.
+📄 **[`fixtures/support-ticket-7741.md`](fixtures/support-ticket-7741.md)** —
+an enterprise customer claims the AI billing assistant showed their invoice to
+another customer, who "only asked for it."
 
-## Objectives
+## Step 2 — Case data (exhibits)
 
-1. **INVESTIGATE** — understand how the assistant resolves "my invoice" into data; reproduce the cross-tenant disclosure
-2. **PROVE** — demonstrate the vulnerability and **collect the runtime `EVIDENCE{...}` token** it exposes. This is required: a case without evidence does not close — and if you patch first, you destroy the crime scene.
-3. **CONTAIN** — repair `app/` so that:
-   - every test in `tests/security/` passes, and
-   - every test in `tests/function/` still passes (customers can still query their own invoices)
+Additional information recovered from the LumaWorks systems:
 
-## Setup
+- 📎 [`fixtures/tenants.json`](fixtures/tenants.json) — the customers involved
+  and their API credentials. Work out who the victim is — and whose identity
+  *you* will assume for the investigation.
+- 📎 [`fixtures/invoices.json`](fixtures/invoices.json) — the invoice records
+  in the system at the time of the incident.
+
+## Step 3 — The scene: run the vulnerable application
+
+[`app/`](app/) contains the system under investigation — the LumaWorks billing
+assistant, full source plus Dockerfile. **Your edits to this source are your
+fix.** Deploy the scene:
 
 ```bash
-docker compose up --build case-001   # app is built from app/ — your source edits ARE the fix
-./verify case-001 --evidence 'EVIDENCE{...}'   # closes only with valid evidence + both suites green
+docker compose up --build case-001
 ```
 
-- **Customer portal (chat UI):** http://localhost:8001 — authenticate with your tenant's API key (see `fixtures/`)
+- **Customer portal (chat UI):** http://localhost:8001 — authenticate with a
+  tenant API key from the exhibits
 - **API explorer:** http://localhost:8001/docs
+
+## Step 4 — The spec: the tests
+
+[`tests/`](tests/) defines what "closed" means:
+
+- `tests/security/` — the security spec; **red** until the flaw is correctly
+  repaired
+- `tests/function/` — legitimate behavior (customers querying their own
+  invoices); **green now and must stay green**
+
+Run `./verify case-001` at any time to see exactly where you stand.
+
+## Step 5 — Prove it
+
+Reproduce the disclosure and **collect the runtime `EVIDENCE{...}` token** it
+exposes. This is required: a case without evidence does not close — and if you
+patch first, you destroy the crime scene.
+
+## Step 6 — Contain and close
+
+Repair `app/` so the security tests pass without breaking the function tests,
+then:
+
+```bash
+./verify case-001 --evidence 'EVIDENCE{...}'
+```
+
+🟢 `CASE 001: CLOSED` — done. Debrief with your handler and open the next case
+file.
 
 ## Field notes
 
