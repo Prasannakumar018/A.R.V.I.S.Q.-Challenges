@@ -32,7 +32,13 @@ docker compose up --build case-NNN
 - <entry point, e.g. UI at http://localhost:80NN>
 - **API explorer:** http://localhost:80NN/docs
 
-## Step 4 — The spec: the tests
+## Step 4 — Investigate the scene
+
+Probe the running application before you try to break it: <entry points —
+UI, API explorer at /docs, raw requests. What should the investigator try to
+understand before exploiting?>
+
+## Step 5 — The spec: the tests
 
 [`tests/`](tests/) defines what "closed" means:
 
@@ -41,16 +47,17 @@ docker compose up --build case-NNN
 
 Run `./verify case-NNN` at any time to see exactly where you stand.
 
-## Step 5 — Prove it
+## Step 6 — Prove it
 
 Reproduce the incident and **collect the runtime `EVIDENCE{...}` token** it
 exposes. This is required: a case without evidence does not close — and if you
 patch first, you destroy the crime scene.
 
-## Step 6 — Contain and close
+## Step 7 — Contain and close
 
-Repair `app/` so the security tests pass without breaking the function tests,
-then:
+Fix the code in [`app/`](app/). To verify your fix is working, use the tests:
+`./verify case-NNN` — security must turn green without function going red.
+When both suites pass, submit with your evidence:
 
 ```bash
 ./verify case-NNN --evidence 'EVIDENCE{...}'

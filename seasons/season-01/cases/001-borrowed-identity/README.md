@@ -38,7 +38,14 @@ docker compose up --build case-001
   tenant API key from the exhibits
 - **API explorer:** http://localhost:8001/docs
 
-## Step 4 — The spec: the tests
+## Step 4 — Investigate the scene
+
+Probe the running application before you try to break it: the customer portal,
+the API explorer at `/docs`, raw requests. Understand how the assistant turns
+"my invoice" into data — which endpoints exist, what the assistant can reach,
+and where identity enters the picture.
+
+## Step 5 — The spec: the tests
 
 [`tests/`](tests/) defines what "closed" means:
 
@@ -49,16 +56,17 @@ docker compose up --build case-001
 
 Run `./verify case-001` at any time to see exactly where you stand.
 
-## Step 5 — Prove it
+## Step 6 — Prove it
 
 Reproduce the disclosure and **collect the runtime `EVIDENCE{...}` token** it
 exposes. This is required: a case without evidence does not close — and if you
 patch first, you destroy the crime scene.
 
-## Step 6 — Contain and close
+## Step 7 — Contain and close
 
-Repair `app/` so the security tests pass without breaking the function tests,
-then:
+Fix the code in [`app/`](app/). To verify your fix is working, use the tests:
+`./verify case-001` — security must turn green without function going red.
+When both suites pass, submit with your evidence:
 
 ```bash
 ./verify case-001 --evidence 'EVIDENCE{...}'
